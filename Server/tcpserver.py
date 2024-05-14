@@ -54,8 +54,14 @@ def tcp_server(server_socket):
                         # find all occurrences of 192 in the data
                         indices = find_all(data)
                         data_between = []
-                        for i in range(len(indices) - 1):
-                            data_between.append(data[indices[i]+1:indices[i+1]])
+                        if indices:
+                            if len(indices) == 1:
+                                data_between.append(data)
+                            else:
+                                for i in range(len(indices) - 1):
+                                    data_between.append(data[indices[i]+1:indices[i+1]])
+                        else:
+                            data_between.append(data)
                         # print(f"The data between all occurrences of 192 is {data_between}")
 
                         for i in range(len(data_between)):
@@ -71,8 +77,8 @@ def tcp_server(server_socket):
                             print(f"TCP OSC message: {label} {args}")
 
                             if label == "/time" and len(args) == 2:
-                                received_time1 = args[0]
-                                received_time2 = args[1]
+                                received_time1 = args[0]/1000.0
+                                received_time2 = args[1]/1000.0
                                 received_time1_utc = received_time1 - 7200
 
                                 # Now you can compare received_time1, received_time2 and system_time, or synchronize them as needed
@@ -83,7 +89,9 @@ def tcp_server(server_socket):
                                     # print(f"Button 1: {buttonarg0}")
                             
                     else:
+                        print("ConnectionResetError")
                         raise ConnectionResetError
+
                 except ConnectionResetError:
                     broadcast_data(server_socket, current_socket, f"Client {client_address} is offline")
                     print(f"Client {client_address} is offline")
